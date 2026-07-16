@@ -2,7 +2,7 @@ def explain_anemia(data):
     explanations = []
     suggestions = []
 
-    hemoglobin = data.get("Hemoglobin")
+    hemoglobin = data.get("HGB")
     mcv = data.get("MCV")
     mch = data.get("MCH")
     mchc = data.get("MCHC")
@@ -56,8 +56,8 @@ def explain_liver(data):
     suggestions = []
 
     total_bilirubin = data.get("Total_Bilirubin")
-    alt = data.get("Alamine_Aminotransferase")
-    ast = data.get("Aspartate_Aminotransferase")
+    alt = data.get("ALT")
+    ast = data.get("AST")
     albumin = data.get("Albumin")
 
     if total_bilirubin is not None and total_bilirubin > 1.2:

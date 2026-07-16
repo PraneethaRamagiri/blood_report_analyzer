@@ -54,15 +54,12 @@ class DiabetesInput(BaseModel):
 @app.post("/predict/diabetes")
 def diabetes_prediction(data: DiabetesInput):
 
-    result = predict_diabetes(
-        data.dict()
-    )
+    result = predict_diabetes(data.dict())
 
     return {
         "disease": "Diabetes",
-        "prediction": int(result)
+        **result
     }
-
 
 
 # ==========================
@@ -95,9 +92,8 @@ def thyroid_prediction(data: ThyroidInput):
     )
 
     return {
-        "disease": "Thyroid",
-        "prediction": result
-    
+    "disease": "Thyroid",
+    **result
     }
 
 
@@ -126,10 +122,9 @@ def anemia_prediction(data: AnemiaInput):
     )
 
     return {
-        "disease": "Anemia",
-        "prediction": result
-    
-    }
+    "disease": "Anemia",
+    **result
+    }   
 
 
 
@@ -160,6 +155,6 @@ def liver_prediction(data: LiverInput):
     )
 
     return {
-        "disease": "Liver Disease",
-        "prediction": int(result)
-    }
+    "disease": "Liver Disease",
+    **result
+}

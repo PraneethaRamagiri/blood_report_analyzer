@@ -1,3 +1,9 @@
+from explanation import (
+    explain_diabetes,
+    explain_thyroid,
+    explain_anemia,
+    explain_liver
+)
 import pandas as pd
 
 from model_loader import (
@@ -34,7 +40,15 @@ def predict_diabetes(data):
         input_data
     )
 
-    return prediction[0]
+    prediction_label = "Diabetes" if int(prediction[0]) == 1 else "No Diabetes"
+
+    explanation = explain_diabetes(data)
+
+    return {
+    "prediction": prediction_label,
+    "explanation": explanation["explanation"],
+    "suggestions": explanation["suggestions"]
+    }
 
 
 # ==========================
@@ -59,7 +73,13 @@ def predict_thyroid(data):
         prediction
     )
 
-    return result[0]
+    explanation = explain_thyroid(data)
+
+    return {
+        "prediction": result[0],
+        "explanation": explanation["explanation"],
+        "suggestions": explanation["suggestions"]
+    }
 
 
 # ==========================
@@ -81,7 +101,13 @@ def predict_anemia(data):
     )
 
     # Anemia model returns text label
-    return prediction[0]
+    explanation = explain_anemia(data)
+
+    return {
+        "prediction": prediction[0],
+        "explanation": explanation["explanation"],
+        "suggestions": explanation["suggestions"]
+    }
 
 
 # ==========================
@@ -101,5 +127,12 @@ def predict_liver(data):
     prediction = liver_model.predict(
         input_data
     )
+    prediction_label = "Liver Disease" if int(prediction[0]) == 1 else "No Liver Disease"
 
-    return prediction[0]
+    explanation = explain_liver(data)
+
+    return {
+        "prediction": prediction_label,
+        "explanation": explanation["explanation"],
+        "suggestions": explanation["suggestions"]
+    }
