@@ -1,6 +1,17 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import UploadFile, File
+import shutil
+import os
+
+from ocr import extract_text
+from extractor import (
+    extract_cbc_values,
+    extract_liver_values,
+    extract_diabetes_values,
+    extract_thyroid_values
+)
 
 from prediction import (
     predict_diabetes,
@@ -158,3 +169,33 @@ def liver_prediction(data: LiverInput):
     "disease": "Liver Disease",
     **result
 }
+
+
+
+
+@app.post("/upload-report")
+def upload_report(file: UploadFile = File(...)):
+
+    upload_folder = "uploads"
+
+    os.makedirs(upload_folder, exist_ok=True)
+
+    file_path = os.path.join(upload_folder, file.filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    extracted_text = extract_text(file_path)
+
+    cbc = extract_cbc_values(extracted_text)
+    liver = extract_liver_values(extracted_text)
+    diabetes = extract_diabetes_values(extracted_text)
+    thyroid = extract_thyroid_values(extracted_text)
+
+    return {
+        "filename": file.filename,
+        "cbc": cbc,
+        "liver": liver,
+        "diabetes": diabetes,
+        "thyroid": thyroid
+    }

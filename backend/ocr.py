@@ -91,7 +91,6 @@ def extract_text(file_path):
         raise ValueError("Unsupported file format.")
     
 
-
 if __name__ == "__main__":
 
     file_path = "sample_report.pdf"   # Replace with your file
