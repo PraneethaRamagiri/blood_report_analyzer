@@ -5,6 +5,7 @@ from fastapi import UploadFile, File
 import shutil
 import os
 
+
 from ocr import extract_text
 from extractor import (
     extract_cbc_values,
@@ -20,6 +21,8 @@ from prediction import (
     predict_liver
 )
 
+# Temporary storage for diabetes values
+diabetes_cache = {}
 
 app = FastAPI(
     title="Blood Report Analyzer API"
@@ -172,12 +175,10 @@ def liver_prediction(data: LiverInput):
 
 
 
-
 @app.post("/upload-report")
 def upload_report(file: UploadFile = File(...)):
 
     upload_folder = "uploads"
-
     os.makedirs(upload_folder, exist_ok=True)
 
     file_path = os.path.join(upload_folder, file.filename)
@@ -185,10 +186,19 @@ def upload_report(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    # ==========================
+    # OCR
+    # ==========================
+
     extracted_text = extract_text(file_path)
+
     print("\n========== OCR TEXT ==========")
     print(extracted_text)
     print("========== END OCR TEXT ==========\n")
+
+    # ==========================
+    # Extraction
+    # ==========================
 
     cbc = extract_cbc_values(extracted_text)
     liver = extract_liver_values(extracted_text)
@@ -202,9 +212,8 @@ def upload_report(file: UploadFile = File(...)):
     print("Thyroid:", thyroid)
     print("============================\n")
 
-    
-        # ==========================
-    # CBC Report (Anemia)
+    # ==========================
+    # Anemia
     # ==========================
 
     if cbc["HGB"] is not None:
@@ -217,9 +226,8 @@ def upload_report(file: UploadFile = File(...)):
             **result
         }
 
-
     # ==========================
-    # Liver Report
+    # Liver Disease
     # ==========================
 
     if liver["Total_Bilirubin"] is not None:
@@ -232,37 +240,82 @@ def upload_report(file: UploadFile = File(...)):
             **result
         }
 
-
     # ==========================
-    # Diabetes Report
+    # Diabetes
     # ==========================
 
-    if diabetes["RBS"] is not None:
+    # Check if this report contains any diabetes values
+    has_diabetes_data = any(
+        value is not None for value in diabetes.values()
+    )
 
-        result = predict_diabetes(diabetes)
+    if has_diabetes_data:
 
+        print(">>> ENTERED DIABETES BLOCK <<<")
+
+        # Save values into cache
+        for key, value in diabetes.items():
+            if value is not None:
+                diabetes_cache[key] = value
+
+        print("Current Report:", diabetes)
+        print("Cache:", diabetes_cache)
+
+        required_features = [
+            "Chol",
+            "Trig",
+            "HDL",
+            "LDL",
+            "VLDL",
+            "RBS"
+        ]
+
+        missing_features = [
+            feature
+            for feature in required_features
+            if diabetes_cache.get(feature) is None
+        ]
+
+        print("Missing:", missing_features)
+
+        # If all values are available → Predict
+        if len(missing_features) == 0:
+
+            result = predict_diabetes(diabetes_cache)
+
+            diabetes_cache.clear()
+
+            return {
+                "filename": file.filename,
+                "disease": "Diabetes",
+                **result
+            }
+
+        # Otherwise wait for another report
         return {
             "filename": file.filename,
-            "disease": "Diabetes",
-            **result
+            "message": "Diabetes report detected. Please upload another report containing the missing parameters.",
+            "missing_features": missing_features,
+            "current_values": diabetes_cache
         }
 
-
     # ==========================
-    # Thyroid Report
+    # Thyroid
     # ==========================
 
     if thyroid["TSH"] is not None:
 
-        result = predict_thyroid(thyroid)
-
         return {
             "filename": file.filename,
-            "disease": "Thyroid",
-            **result
+            "message": "Thyroid report detected.",
+            "thyroid": thyroid
         }
 
+    # ==========================
+    # Unknown Report
+    # ==========================
 
     return {
+        "filename": file.filename,
         "message": "Unable to detect report type."
     }

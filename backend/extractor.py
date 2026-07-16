@@ -138,32 +138,32 @@ def extract_liver_values(text):
 def extract_diabetes_values(text):
 
     values = {
+
         "Chol": extract_value(text, [
-            r"Total\s*Cholesterol.*?([\d.]+)",
-            r"\bChol\b.*?([\d.]+)"
+            r"Cholesterol\s*Total\s*([\d.]+)",
+            r"Total\s*Cholesterol\s*([\d.]+)"
         ]),
 
         "Trig": extract_value(text, [
-            r"Triglycerides?.*?([\d.]+)",
-            r"\bTrig\b.*?([\d.]+)"
+            r"Triglycerides\s*([\d.]+)"
         ]),
 
         "HDL": extract_value(text, [
-            r"HDL.*?([\d.]+)"
+            r"HDL\s*Cholesterol\s*([\d.]+)"
         ]),
 
         "LDL": extract_value(text, [
-            r"LDL.*?([\d.]+)"
+            r"LDL\s*Cholesterol.*?\s([\d.]+)\s*mg/dL"
         ]),
 
         "VLDL": extract_value(text, [
-            r"VLDL.*?([\d.]+)"
+            r"VLDL\s*Cholesterol\s*([\d.]+)"
         ]),
 
         "RBS": extract_value(text, [
-            r"Random\s*Blood\s*Sugar.*?([\d.]+)",
-            r"\bRBS\b.*?([\d.]+)",
-            r"Blood\s*Sugar.*?([\d.]+)"
+            r"Random\s*Blood\s*Sugar\s*([\d.]+)",
+            r"Blood\s*Sugar\s*([\d.]+)",
+            r"\bRBS\b\s*([\d.]+)"
         ])
     }
 
