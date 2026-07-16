@@ -1,7 +1,7 @@
 import os
 import pdfplumber
 import easyocr
-import cv2
+
 
 # Initialize EasyOCR reader once
 reader = easyocr.Reader(['en'])
@@ -31,24 +31,9 @@ def extract_text_from_pdf(file_path):
 # Extract text from Image
 # ==========================
 
-
-
 def extract_text_from_image(file_path):
 
-    image = cv2.imread(file_path)
-
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Enlarge image (improves OCR)
-    gray = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-    # Threshold
-    _, thresh = cv2.threshold(
-        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
-
-    result = reader.readtext(thresh)
+    result = reader.readtext(file_path)
 
     text = ""
 
@@ -75,7 +60,6 @@ def extract_text(file_path):
     else:
         raise ValueError("Unsupported file format.")
     
-
 
 if __name__ == "__main__":
 
