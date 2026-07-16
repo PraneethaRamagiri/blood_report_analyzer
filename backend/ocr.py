@@ -1,7 +1,9 @@
 import os
 import pdfplumber
 import easyocr
+import fitz
 import cv2
+import numpy as np
 
 # Initialize EasyOCR reader once
 reader = easyocr.Reader(['en'])
@@ -15,6 +17,7 @@ def extract_text_from_pdf(file_path):
 
     text = ""
 
+    # Try extracting text directly
     with pdfplumber.open(file_path) as pdf:
 
         for page in pdf.pages:
@@ -24,6 +27,33 @@ def extract_text_from_pdf(file_path):
             if page_text:
                 text += page_text + "\n"
 
+    # If text looks good, return it
+    if len(text) > 300:
+        print("✅ Extracted text using pdfplumber")
+        return text
+
+    print("⚠ Falling back to OCR...")
+
+    doc = fitz.open(file_path)
+
+    text = ""
+
+    for page in doc:
+
+        pix = page.get_pixmap(matrix=fitz.Matrix(3, 3))
+
+        img = np.frombuffer(pix.samples, dtype=np.uint8)
+
+        img = img.reshape(pix.height, pix.width, pix.n)
+
+        if pix.n == 4:
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+
+        result = reader.readtext(img)
+
+        for item in result:
+            text += item[1] + "\n"
+
     return text
 
 
@@ -31,24 +61,9 @@ def extract_text_from_pdf(file_path):
 # Extract text from Image
 # ==========================
 
-
-
 def extract_text_from_image(file_path):
 
-    image = cv2.imread(file_path)
-
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Enlarge image (improves OCR)
-    gray = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-    # Threshold
-    _, thresh = cv2.threshold(
-        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
-
-    result = reader.readtext(thresh)
+    result = reader.readtext(file_path)
 
     text = ""
 
