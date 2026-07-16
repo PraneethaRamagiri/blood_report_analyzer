@@ -14,7 +14,16 @@ def extract_value(text, patterns):
                 continue
     return None
 
+def extract_gender(text):
+    match = re.search(r"Age\s*/\s*Sex\s*:\s*\d+\s*YRS\s*/\s*([MF])", text, re.IGNORECASE)
 
+    if match:
+        gender = match.group(1).upper()
+
+        # Use the same encoding as your dataset
+        return 1 if gender == "M" else 0
+
+    return None
 # ==========================================================
 # CBC (Anemia)
 # ==========================================================
@@ -72,13 +81,23 @@ def extract_cbc_values(text):
 def extract_liver_values(text):
 
     values = {
-        "TB": extract_value(text, [
-            r"Total\s*Bilirubin.*?([\d.]+)"
-        ]),
+        "Age": extract_value(text, [
+        r"Age\s*/\s*Sex\s*:\s*(\d+)"
+    ]),
 
-        "DB": extract_value(text, [
-            r"Direct\s*Bilirubin.*?([\d.]+)"
-        ]),
+    "Gender": extract_gender(text),
+
+
+
+            "Total_Bilirubin": extract_value(text, [
+        r"SERUM\s*BILIRUBIN\s*\(TOTAL\).*?([\d.]+)",
+        r"Total\s*Bilirubin.*?([\d.]+)"
+    ]),
+
+            "Direct_Bilirubin": extract_value(text, [
+        r"SERUM\s*BILIRUBIN\s*\(DIRECT\).*?([\d.]+)",
+        r"Direct\s*Bilirubin.*?([\d.]+)"
+    ]),
 
         "ALT": extract_value(text, [
             r"ALT.*?([\d.]+)",
@@ -90,7 +109,7 @@ def extract_liver_values(text):
             r"SGOT.*?([\d.]+)"
         ]),
 
-        "ALP": extract_value(text, [
+        "Alkaline_Phosphotase": extract_value(text, [
             r"Alkaline\s*Phosphatase.*?([\d.]+)",
             r"\bALP\b.*?([\d.]+)"
         ]),
@@ -99,9 +118,14 @@ def extract_liver_values(text):
             r"Albumin.*?([\d.]+)"
         ]),
 
-        "TP": extract_value(text, [
-            r"Total\s*Protein.*?([\d.]+)"
-        ])
+            "Total_Proteins": extract_value(text, [
+        r"SERUM\s*PROTEIN.*?([\d.]+)",
+        r"Total\s*Protein.*?([\d.]+)"
+    ]),
+        "Albumin_Globulin_Ratio": extract_value(text, [
+        r"A/G\s*RATIO.*?([\d.]+)"
+    ])
+
     }
 
     return values
@@ -114,14 +138,32 @@ def extract_liver_values(text):
 def extract_diabetes_values(text):
 
     values = {
-        "Glucose": extract_value(text, [
-            r"Glucose.*?([\d.]+)",
-            r"Blood\s*Sugar.*?([\d.]+)",
-            r"Fasting\s*Blood\s*Sugar.*?([\d.]+)"
+        "Chol": extract_value(text, [
+            r"Total\s*Cholesterol.*?([\d.]+)",
+            r"\bChol\b.*?([\d.]+)"
         ]),
 
-        "HbA1c": extract_value(text, [
-            r"HbA1c.*?([\d.]+)"
+        "Trig": extract_value(text, [
+            r"Triglycerides?.*?([\d.]+)",
+            r"\bTrig\b.*?([\d.]+)"
+        ]),
+
+        "HDL": extract_value(text, [
+            r"HDL.*?([\d.]+)"
+        ]),
+
+        "LDL": extract_value(text, [
+            r"LDL.*?([\d.]+)"
+        ]),
+
+        "VLDL": extract_value(text, [
+            r"VLDL.*?([\d.]+)"
+        ]),
+
+        "RBS": extract_value(text, [
+            r"Random\s*Blood\s*Sugar.*?([\d.]+)",
+            r"\bRBS\b.*?([\d.]+)",
+            r"Blood\s*Sugar.*?([\d.]+)"
         ])
     }
 
@@ -143,7 +185,7 @@ def extract_thyroid_values(text):
             r"\bT3\b.*?([\d.]+)"
         ]),
 
-        "T4": extract_value(text, [
+        "TT4": extract_value(text, [
             r"\bT4\b.*?([\d.]+)"
         ])
     }

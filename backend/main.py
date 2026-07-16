@@ -186,16 +186,83 @@ def upload_report(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     extracted_text = extract_text(file_path)
+    print("\n========== OCR TEXT ==========")
+    print(extracted_text)
+    print("========== END OCR TEXT ==========\n")
 
     cbc = extract_cbc_values(extracted_text)
     liver = extract_liver_values(extracted_text)
     diabetes = extract_diabetes_values(extracted_text)
     thyroid = extract_thyroid_values(extracted_text)
 
+    print("\n===== EXTRACTED VALUES =====")
+    print("CBC:", cbc)
+    print("Liver:", liver)
+    print("Diabetes:", diabetes)
+    print("Thyroid:", thyroid)
+    print("============================\n")
+
+    
+        # ==========================
+    # CBC Report (Anemia)
+    # ==========================
+
+    if cbc["HGB"] is not None:
+
+        result = predict_anemia(cbc)
+
+        return {
+            "filename": file.filename,
+            "disease": "Anemia",
+            **result
+        }
+
+
+    # ==========================
+    # Liver Report
+    # ==========================
+
+    if liver["Total_Bilirubin"] is not None:
+
+        result = predict_liver(liver)
+
+        return {
+            "filename": file.filename,
+            "disease": "Liver Disease",
+            **result
+        }
+
+
+    # ==========================
+    # Diabetes Report
+    # ==========================
+
+    if diabetes["RBS"] is not None:
+
+        result = predict_diabetes(diabetes)
+
+        return {
+            "filename": file.filename,
+            "disease": "Diabetes",
+            **result
+        }
+
+
+    # ==========================
+    # Thyroid Report
+    # ==========================
+
+    if thyroid["TSH"] is not None:
+
+        result = predict_thyroid(thyroid)
+
+        return {
+            "filename": file.filename,
+            "disease": "Thyroid",
+            **result
+        }
+
+
     return {
-        "filename": file.filename,
-        "cbc": cbc,
-        "liver": liver,
-        "diabetes": diabetes,
-        "thyroid": thyroid
+        "message": "Unable to detect report type."
     }

@@ -127,6 +127,12 @@ def predict_liver(data):
     prediction = liver_model.predict(
         input_data
     )
+    prediction = liver_model.predict(input_data)
+
+    print("Raw model prediction:", prediction)
+    print("Prediction value:", int(prediction[0]))
+
+
     prediction_label = "Liver Disease" if int(prediction[0]) == 1 else "No Liver Disease"
 
     explanation = explain_liver(data)
