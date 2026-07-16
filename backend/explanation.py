@@ -212,5 +212,25 @@ def explain_diabetes(data):
         "suggestions": suggestions
     }
 
+def generate_explanation(disease, values):
 
+    disease = disease.lower()
+
+    if disease == "anemia":
+        return explain_anemia(values)
+
+    elif disease == "diabetes":
+        return explain_diabetes(values)
+
+    elif disease == "thyroid":
+        return explain_thyroid(values)
+
+    elif disease == "liver":
+        return explain_liver(values)
+
+    else:
+        return {
+            "explanation": [],
+            "suggestions": []
+        }
 
